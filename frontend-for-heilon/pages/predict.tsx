@@ -1,31 +1,69 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 const Predict: React.FC = () => {
   const [model, setModel] = useState<string>("");
-  const [inputSequence, setInputSequence] = useState<string>("");
-  const [output, setOutput] = useState<string | null>(null);
-  const [buttonText, setButtonText] = useState<string>("Predict"); // Button text state
+  const [sequenceLength, setSequenceLength] = useState<number>(1);
+  const [inputSequences, setInputSequences] = useState<string[]>([""]);
+  const [output, setOutput] = useState<string[]>([]);
+  const [buttonText, setButtonText] = useState<string>("Predict");
 
-  const handlePredict = () => {
-    const randomValue = `Predicted Value: ${Math.random()
-      .toString(36)
-      .substring(7)}`; // Generate a random string
+  const handlePredict = async () => {
+    try {
+      const requestPayload = {
+        input_sequence: inputSequences,
+      };
 
-    if (buttonText === "Predict") {
-      // First click logic
-      setOutput(randomValue);
+      console.log("Request payload:", requestPayload);
+
+      // Send POST request to the backend
+      const response = await axios.post(
+        "http://127.0.0.1:8000/predict/lstm",
+        requestPayload
+      );
+
+      console.log("Response from backend:", response.data);
+
+      // Get the predicted event
+      const predictedEvent = response.data.predicted_event;
+
+      // Append the new prediction to the output array
+      setOutput((prevOutput) => [...prevOutput, predictedEvent]);
+
+      // Update inputSequences for the next prediction
+      setInputSequences((prevSequences) => {
+        const newInput = [...prevSequences.slice(1), predictedEvent]; // Remove the first sequence and add the new predicted event
+        return newInput;
+      });
+
       setButtonText("Next");
-    } else {
-      // Subsequent clicks append to the output
-      setOutput((prevOutput) => `${prevOutput}\n${randomValue}`);
+    } catch (error) {
+      console.error("Error during prediction:", error);
+      setOutput((prevOutput) => [
+        ...prevOutput,
+        "An error occurred. Please check the console for details.",
+      ]);
     }
   };
 
   const handleReset = () => {
     setModel("");
-    setInputSequence("");
-    setOutput(null); // Clear the output field
-    setButtonText("Predict"); // Reset the button text
+    setSequenceLength(1);
+    setInputSequences([""]);
+    setOutput([]);
+    setButtonText("Predict");
+  };
+
+  const handleSequenceChange = (index: number, value: string) => {
+    const newSequences = [...inputSequences];
+    newSequences[index] = value;
+    setInputSequences(newSequences);
+  };
+
+  const handleLengthChange = (value: number) => {
+    setSequenceLength(value);
+    const newSequences = Array(value).fill("");
+    setInputSequences(newSequences);
   };
 
   return (
@@ -40,10 +78,9 @@ const Predict: React.FC = () => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         padding: "30px",
-        gap: "30px", // Space between the left and right boxes
+        gap: "30px",
       }}
     >
-      {/* Left Box: Form */}
       <div
         style={{
           flex: 1,
@@ -74,7 +111,6 @@ const Predict: React.FC = () => {
           }}
           onSubmit={(e) => e.preventDefault()}
         >
-          {/* Model Selection */}
           <label
             style={{
               fontSize: "0.9rem",
@@ -104,7 +140,33 @@ const Predict: React.FC = () => {
             <option value="lstm">LSTM</option>
           </select>
 
-          {/* Input Sequence */}
+          <label
+            style={{
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              color: "#4a5568",
+            }}
+          >
+            Input Sequence Length:
+          </label>
+          <select
+            value={sequenceLength}
+            onChange={(e) => handleLengthChange(Number(e.target.value))}
+            style={{
+              padding: "12px",
+              fontSize: "1rem",
+              borderRadius: "10px",
+              border: "1px solid #e2e8f0",
+              backgroundColor: "#f7fafc",
+              width: "100%",
+              outline: "none",
+            }}
+          >
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+            <option value={3}>3</option>
+          </select>
+
           <label
             style={{
               fontSize: "0.9rem",
@@ -114,30 +176,32 @@ const Predict: React.FC = () => {
           >
             Input Sequence:
           </label>
-          <textarea
-            value={inputSequence}
-            onChange={(e) => setInputSequence(e.target.value)}
-            placeholder="Enter your input sequence"
-            style={{
-              padding: "12px",
-              fontSize: "1rem",
-              borderRadius: "10px",
-              border: "1px solid #e2e8f0",
-              backgroundColor: "#f7fafc",
-              height: "120px",
-              resize: "none",
-              outline: "none",
-            }}
-          />
+          {Array.from({ length: sequenceLength }, (_, i) => (
+            <textarea
+              key={i}
+              value={inputSequences[i] || ""}
+              onChange={(e) => handleSequenceChange(i, e.target.value)}
+              placeholder={`Enter input sequence ${i + 1}`}
+              style={{
+                padding: "12px",
+                fontSize: "1rem",
+                borderRadius: "10px",
+                border: "1px solid #e2e8f0",
+                backgroundColor: "#f7fafc",
+                height: "80px",
+                resize: "none",
+                outline: "none",
+                marginBottom: "10px",
+              }}
+            />
+          ))}
 
-          {/* Buttons */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               gap: "20%",
               marginTop: "20px",
-              margin: "10%",
             }}
           >
             <button
@@ -156,16 +220,6 @@ const Predict: React.FC = () => {
                 textAlign: "center",
                 transition: "transform 0.3s, background 0.3s",
                 boxShadow: "0 3px 8px rgba(0, 0, 0, 0.2)",
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(90deg, #553c9a, #2b6cb0)";
-                e.currentTarget.style.transform = "scale(1.03)";
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(90deg, #6b46c1, #3182ce)";
-                e.currentTarget.style.transform = "scale(1)";
               }}
             >
               {buttonText}
@@ -187,16 +241,6 @@ const Predict: React.FC = () => {
                 transition: "transform 0.3s, background 0.3s",
                 boxShadow: "0 3px 8px rgba(0, 0, 0, 0.2)",
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(90deg, #c53030, #b83280)";
-                e.currentTarget.style.transform = "scale(1.03)";
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(90deg, #e53e3e, #d53f8c)";
-                e.currentTarget.style.transform = "scale(1)";
-              }}
             >
               Reset
             </button>
@@ -204,8 +248,7 @@ const Predict: React.FC = () => {
         </form>
       </div>
 
-      {/* Right Box: Output (conditionally rendered) */}
-      {output && (
+      {/* {output.length > 0 && (
         <div
           style={{
             flex: 1,
@@ -215,32 +258,85 @@ const Predict: React.FC = () => {
             borderRadius: "20px",
             boxShadow: "0 12px 24px rgba(0, 0, 0, 0.1)",
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
+            justifyContent: "flex-start",
             alignItems: "center",
             textAlign: "center",
           }}
         >
-          <div>
-            <h2
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                color: "#2d3748",
-                marginBottom: "10px",
-              }}
-            >
-              Output:
-            </h2>
-            <pre
-              style={{
-                fontSize: "1rem",
-                color: "#4a5568",
-                whiteSpace: "pre-wrap",
-                wordWrap: "break-word",
-              }}
-            >
-              {output}
-            </pre>
+          <h2
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              color: "#2d3748",
+              marginBottom: "10px",
+            }}
+          >
+            Predicted Events:
+          </h2>
+          <div
+            style={{
+              fontSize: "1rem",
+              color: "#4a5568",
+              whiteSpace: "pre-wrap",
+              wordWrap: "break-word",
+              textAlign: "left",
+              width: "100%",
+            }}
+          >
+            {output.map((event, index) => (
+              <p key={index}>{event}</p>
+            ))}
+          </div>
+        </div>
+      )} */}
+
+      {output.length > 0 && (
+        <div
+          style={{
+            flex: 1,
+            maxWidth: "600px",
+            background: "#ffffff",
+            padding: "40px",
+            borderRadius: "20px",
+            boxShadow: "0 12px 24px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              color: "#2d3748",
+              marginBottom: "10px",
+            }}
+          >
+            Predicted Events:
+          </h2>
+          <div
+            style={{
+              fontSize: "1rem",
+              color: "#4a5568",
+              whiteSpace: "pre-wrap",
+              wordWrap: "break-word",
+              textAlign: "left",
+              width: "100%",
+            }}
+          >
+            {output.map((event, index) => (
+              <div
+                key={index}
+                style={{
+                  marginBottom: "8px", // Add spacing between items
+                }}
+              >
+                <strong>{index + 1}.</strong> {event}
+              </div>
+            ))}
           </div>
         </div>
       )}

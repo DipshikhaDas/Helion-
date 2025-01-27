@@ -18,7 +18,6 @@ const Home = () => {
         backgroundPosition: "center",
       }}
     >
-      {/* White translucent overlay */}
       <div
         style={{
           position: "absolute",
@@ -26,11 +25,10 @@ const Home = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(255, 255, 255, 0.5)", // Adjust transparency here
+          backgroundColor: "rgba(255, 255, 255, 0.5)", 
           zIndex: 1,
         }}
       ></div>
-      {/* Content */}
       <div
         style={{
           position: "relative",
@@ -38,20 +36,18 @@ const Home = () => {
           textAlign: "center",
         }}
       >
-        {/* Title */}
         <h1
           style={{
             color: "#333",
             fontSize: "4rem",
             fontWeight: "bold",
-            textShadow: "2px 2px 5px rgba(0, 0, 0, 0.3)", // Subtle shadow
+            textShadow: "2px 2px 5px rgba(0, 0, 0, 0.3)", 
             marginBottom: "20px",
           }}
         >
           Welcome to Helion
         </h1>
 
-        {/* Cool Button */}
         <button
           style={{
             padding: "15px 30px",
@@ -59,11 +55,11 @@ const Home = () => {
             borderRadius: "50px",
             border: "none",
             cursor: "pointer",
-            background: "linear-gradient(90deg, #0070f3, #00d8ff)", // Gradient background
+            background: "linear-gradient(90deg, #0070f3, #00d8ff)", 
             color: "white",
             fontWeight: "600",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Button shadow
-            transition: "transform 0.2s, box-shadow 0.2s", // Hover effects
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", 
+            transition: "transform 0.2s, box-shadow 0.2s", 
           }}
           onMouseOver={(e) => {
             e.target.style.transform = "scale(1.1)";

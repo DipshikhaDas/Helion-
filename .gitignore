@@ -1,9 +1,6 @@
-# Ignore virtual environment
 backend-for-helion/helionVenv/
 
-# Ignore Node.js dependencies
 frontend-for-helion/node_modules/
 backend-for-helion/node_modules/
 
-# Ignore Next.js build files
 frontend-for-helion/.next/
