@@ -42,17 +42,25 @@ rnn_model_4 = load_model_safe("rnn_model_4.h5")
 rnn_model_5 = load_model_safe("rnn_model_5.h5")
 rnn_model_n = load_model_safe("rnn_model_n.h5")
 
+lstm_all_3_20 = load_model_safe("lstm_all_3_20.h5")
+lstm_all_5_15_2layers = load_model_safe("lstm_all_5_15_2layers.h5")
+lstm_all_5_15 = load_model_safe("lstm_all_5_15.h5")
+
+
 event_to_idx_lstm = load_json_file("event_to_idx_lstm.json")
 idx_to_event_lstm = load_json_file("idx_to_event_lstm.json")
 
 event_to_idx_rnn = load_json_file("event_to_idx_rnn.json")
 idx_to_event_rnn = load_json_file("idx_to_event_rnn.json")
 
+event_to_idx_all = load_json_file("event_to_idx_all.json")
+idx_to_event_all = load_json_file("idx_to_event_all.json")
+
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"], 
     allow_headers=["*"],  
@@ -151,5 +159,42 @@ def predict_rnn_n(request: PredictionRequest):
         raise HTTPException(status_code=500, detail="RNN model n is unavailable.")
     predicted_event = predict_event(
         request.input_sequence, rnn_model_n, event_to_idx_rnn, idx_to_event_rnn
+    )
+    return {"predicted_event": predicted_event}
+
+
+@app.post("/predict/all/5-15", response_model=PredictionResponse)
+def predict_all_5_15(request: PredictionRequest):
+    if not lstm_all_5_15:
+        raise HTTPException(status_code=500, detail="LSTM 5_15 model is unavailable.")
+    predicted_event = predict_event(
+        request.input_sequence, lstm_all_5_15, event_to_idx_all, idx_to_event_all
+    )
+    return {"predicted_event": predicted_event}
+
+@app.post("/predict/all/2layers/5-15", response_model=PredictionResponse)
+def predict_all_5_15(request: PredictionRequest):
+    if not lstm_all_5_15_2layers:
+        raise HTTPException(status_code=500, detail="lstm_all_5_15_2layers model is unavailable.")
+    predicted_event = predict_event(
+        request.input_sequence, lstm_all_5_15_2layers, event_to_idx_all, idx_to_event_all
+    )
+    return {"predicted_event": predicted_event}
+
+@app.post("/predict/all/5-15", response_model=PredictionResponse)
+def predict_all_5_15(request: PredictionRequest):
+    if not lstm_all_5_15:
+        raise HTTPException(status_code=500, detail="lstm_all_5_15 model is unavailable.")
+    predicted_event = predict_event(
+        request.input_sequence, lstm_all_5_15_2layers, event_to_idx_all, idx_to_event_all
+    )
+    return {"predicted_event": predicted_event}
+
+@app.post("/predict/all/3-20", response_model=PredictionResponse)
+def predict_all_3_20(request: PredictionRequest):
+    if not lstm_all_3_20:
+        raise HTTPException(status_code=500, detail="lstm_all_3_20 model is unavailable.")
+    predicted_event = predict_event(
+        request.input_sequence, lstm_all_3_20, event_to_idx_all, idx_to_event_all
     )
     return {"predicted_event": predicted_event}
