@@ -69,7 +69,7 @@ const Home = () => {
             e.target.style.transform = "scale(1)";
             e.target.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.2)";
           }}
-          onClick={() => router.push('/predict')}
+          onClick={() => router.push('/predictionPage')}
         >
           Start Predicting Events
         </button>
