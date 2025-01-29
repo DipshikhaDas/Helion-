@@ -1,0 +1,11 @@
+fastapi==0.115.7
+uvicorn==0.34.0
+tensorflow==2.18.0
+numpy==2.0.2
+pydantic==2.10.6
+h5py==3.12.1
+protobuf==5.29.3
+grpcio==1.70.0
+keras==3.8.0
+starlette==0.45.3
+requests==2.32.3
