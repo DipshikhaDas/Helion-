@@ -181,15 +181,6 @@ def predict_all_5_15(request: PredictionRequest):
     )
     return {"predicted_event": predicted_event}
 
-@app.post("/predict/all/5-15", response_model=PredictionResponse)
-def predict_all_5_15(request: PredictionRequest):
-    if not lstm_all_5_15:
-        raise HTTPException(status_code=500, detail="lstm_all_5_15 model is unavailable.")
-    predicted_event = predict_event(
-        request.input_sequence, lstm_all_5_15_2layers, event_to_idx_all, idx_to_event_all
-    )
-    return {"predicted_event": predicted_event}
-
 @app.post("/predict/all/3-20", response_model=PredictionResponse)
 def predict_all_3_20(request: PredictionRequest):
     if not lstm_all_3_20:
